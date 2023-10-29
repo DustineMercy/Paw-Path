@@ -4,8 +4,7 @@
     <meta charset='utf-8' />
     <title>Getting started with the Mapbox Directions API</title>
     <meta name='viewport' content='width=device-width, initial-scale=1' />
-    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js'>
-    </script>
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js'></script>
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css' rel='stylesheet' />
     <style>
       body {
@@ -19,51 +18,42 @@
         bottom: 0;
         width: 100%;
       }
+      #instructions {
+  position: absolute;
+  margin: 20px;
+  width: 25%;
+  top: 0;
+  bottom: 20%;
+  padding: 20px;
+  background-color: #fff;
+  overflow-y: scroll;
+  font-family: sans-serif;
+}
     </style>
   </head>
   <body>
     <div id='map'></div>
+    <div id="instructions"></div>
     <script>
     // add the JavaScript here
-      
-      //test code
-      
-      //end test code
-      
-      
-      
-      
-      mapboxgl.accessToken = 'pk.eyJ1Ijoicml5YW5haSIsImEiOiJjbG5tZG05YmMxaTFqMnJwZmdtbnJvcDVhIn0.G4Cv2lxoaq4ThF2KtuFKCA';
-const map = new mapboxgl.Map({
-  container: 'map',
-  style: 'mapbox://styles/mapbox/streets-v12',
-  //center: [startLat, startLong], // starting position
-  //center: [-122.662323, 45.523751], // starting position
-   center: [-77.85922, 40.80772], // starting position
-  zoom: 12
-});
-// set the bounds of the map
-const bounds = [
-  //[-123.069003, 45.395273],
-  //[-122.303707, 45.612333]
-[-77.915452, 40.777780],
-[-77.796405, 40.832873]
+window.onmessage = (event) =>{
+    if (event.data) {
+        mapboxgl.accessToken = 'pk.eyJ1Ijoicml5YW5haSIsImEiOiJjbG5tZGE3YW4yYXAwMnBwZTZ3dWxmaGdmIn0._HfrHJdXtAKWKi9B9fJ6Ig';
+    const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v12',
+            center: [event.data.long, event.data.lat], // starting position
+            zoom: 12
+        });   
 
-];
-map.setMaxBounds(bounds);
+        const start = [event.data.long, event.data.lat];
 
-// an arbitrary start will always be the same
-// only the end or destination will change
-//const start = [-122.662323, 45.523751];
-const start = [-77.85922, 40.80772];
-
+        
 // this is where the code for the next step will go
-      
-      // create a function to make a directions request
+// create a function to make a directions request
 async function getRoute(end) {
-  // make a directions request using cycling profile
-  // an arbitrary start will always be the same
-  // only the end or destination will change
+  // make a directions request using walking profile
+  
   const query = await fetch(
     `https://api.mapbox.com/directions/v5/mapbox/walking/${start[0]},${start[1]};${end[0]},${end[1]}?steps=true&geometries=geojson&access_token=${mapboxgl.accessToken}`,
     { method: 'GET' }
@@ -104,17 +94,32 @@ async function getRoute(end) {
     });
   }
   // add turn instructions here at the end
+  // get the sidebar and add the instructions
+const instructions = document.getElementById('instructions');
+const steps = data.legs[0].steps;
+let tripInstructions = '';
+for (const step of steps) {
+  tripInstructions += `<li>${step.maneuver.instruction}</li>`;
+}
+instructions.innerHTML = `<p><strong>Trip duration: ${Math.floor(
+  data.duration / 60
+)} min 🐕 </strong></p><ol>${tripInstructions}</ol>`;
 }
 
+//map has finished loading
 map.on('load', () => {
-  // make an initial directions request that
-  // starts and ends at the same location
-  getRoute(start);
-
+    map.loadImage('https://dejpknyizje2n.cloudfront.net/marketplace/products/596da3fcdfe04e04bb420a7350ba5176.png',
+    (error, image) => {
+    if (error) throw error;
+    //add image to the map style
+    map.addImage('paw',image);
+    getRoute(start);
+}
+    );
   // Add starting point to the map
   map.addLayer({
     id: 'point',
-    type: 'circle',
+    type: 'symbol',
     source: {
       type: 'geojson',
       data: {
@@ -131,14 +136,16 @@ map.on('load', () => {
         ]
       }
     },
-    paint: {
-      'circle-radius': 10,
-      'circle-color': '#3887be'
-    }
+    layout: {
+        'icon-image': 'paw',
+        'icon-size': 0.10
+     }
+    
   });
   // this is where the code from the next step will go
   map.on('click', (event) => {
   const coords = Object.keys(event.lngLat).map((key) => event.lngLat[key]);
+  console.log(coords);
   const end = {
     type: 'FeatureCollection',
     features: [
@@ -181,8 +188,14 @@ map.on('load', () => {
     });
   }
   getRoute(coords);
+ 
 });
-}); 
+
+});
+
+}
+}
+
     </script>
   </body>
 </html>
