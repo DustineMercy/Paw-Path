@@ -20,15 +20,17 @@
       }
       #instructions {
   position: absolute;
-  margin: 20px;
-  width: 25%;
+  margin: 10px;
+  width: 35%;
   top: 0;
-  bottom: 20%;
-  padding: 20px;
+  bottom: 25%;
+  padding: 10px;
   background-color: #fff;
   overflow-y: scroll;
   font-family: sans-serif;
 }
+     
+      
     </style>
   </head>
   <body>
@@ -43,8 +45,20 @@ window.onmessage = (event) =>{
             container: 'map',
             style: 'mapbox://styles/mapbox/streets-v12',
             center: [event.data.long, event.data.lat], // starting position
-            zoom: 12
+            zoom: 15,
+            pitch: 80,
+            bearing: 41
         });   
+        map.on('style.load', () => {
+            map.addSource('mapbox-dem', {
+                'type': 'raster-dem',
+                'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+                'tileSize': 512,
+                'maxzoom': 14
+        });
+// add the DEM source as a terrain layer with exaggerated height
+map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
+});
 
         const start = [event.data.long, event.data.lat];
 
