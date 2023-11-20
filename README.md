@@ -1,5 +1,7 @@
 # Paw-Path
 The index.html file is the code from Mapbox Directions API help page that we used as a basis for the PawPath application.
+The PawPath Velo Code.txt file is the page code of the navigation page of our PawPath Wix site.
+These are for reference and will not run independently.  To run the code, go the the url listed below.
 
 Paw Path Site Link:
 https://2020riyanair.wixsite.com/pawpath
