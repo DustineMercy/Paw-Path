@@ -6,6 +6,7 @@ $w.onReady(function () {
 	$w('#text9').hide();
 	$w('#text10').hide();
 	$w('#text11').hide();
+	$w('#errorText').hide();
 	$w('#html1').hide(); 
 	
 });
@@ -16,29 +17,47 @@ $w.onReady(function () {
 *	 @param {$w.MouseEvent} event
 */
 export function button1_click(event) {
-	let Address = $w('#addressInput1').value
-	let startLat = Address.location.latitude
-	let startLong = Address.location.longitude
-	let breed = $w('#dropdown1').value
 	
- 	wixData.query("AnimalInformation")
- 	.eq("title", breed)
-	 .include("breedInformation")
-   .find()
-   .then( (results) => {
- 	  let obj = results.items[0];
-	   let breedInfo = obj.breedInformation;
-	console.log(breedInfo);
-	 $w('#text9').text = breedInfo;
-	 $w('#text10').show();
-	 $w('#text9').show();
-	 $w('#text11').show();
-	 $w('#html1').show();
-	 $w('#html1').postMessage({lat: startLat, long: startLong})
-})
-.catch((err) => {
-  console.log(err);
-});
+	let addrValid = $w('#addressInput1').valid;
+	let breedValid = $w('#dropdown1').selectedIndex;
 
+		if(!addrValid || !(breedValid>=0)) {
+			if(!addrValid && breedValid>=0){$w('#errorText').text = "Please Enter a Valid Address"}
+			if(addrValid && !(breedValid>=0)){$w('#errorText').text = "Please Select a Breed"}
+			if(!addrValid && !(breedValid>=0)){$w('#errorText').text = "Please Enter Address and Select a Breed"}
+			$w('#errorText').show();
+		}
+		else{
+			try{
+				$w('#errorText').hide();
+					let Address = $w('#addressInput1').value
+					let startLat = Address.location.latitude
+					let startLong = Address.location.longitude
+					let breed = $w('#dropdown1').value
 
+			
+			 	wixData.query("AnimalInformation")
+ 				.eq("title", breed)
+	 			.include("breedInformation")
+   				.find()
+   				.then( (results) => {
+ 	  			let obj = results.items[0];
+	   			let breedInfo = obj.breedInformation;
+				console.log(breedInfo);
+	 			$w('#text9').text = breedInfo;
+	 			$w('#text10').show();
+	 			$w('#text9').show();
+	 			$w('#text11').show();
+	 			$w('#html1').show();
+	 			$w('#html1').postMessage({lat: startLat, long: startLong})
+				})
+				.catch((err) => {
+  				console.log(err);
+				});
+			}
+			catch (error) {$w('#errorText').text = "Please enter a Valid Address!";
+			$w('#errorText').show();
+			console.log(error);
+			}
+		}
 }
